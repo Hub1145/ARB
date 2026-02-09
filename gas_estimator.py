@@ -6,6 +6,7 @@ from web3 import Web3
 from typing import Dict, Optional
 import asyncio
 import aiohttp
+from config import get_rpc_url
 
 class GasFeeEstimator:
     def __init__(self):
@@ -38,13 +39,6 @@ class GasFeeEstimator:
             'solana': 100,  # SOL price in USD (placeholder)
         }
         
-        # RPC endpoints for gas price
-        self.rpc_endpoints = {
-            'ethereum': 'https://eth.public-rpc.com',
-            'bsc': 'https://bsc-dataseed1.binance.org',
-            'solana': 'https://api.mainnet-beta.solana.com',
-        }
-        
         # Gas price APIs (Solana doesn't have one, we'll fetch from RPC)
         self.gas_apis = {
             'ethereum': 'https://api.etherscan.io/api?module=gastracker&action=gasoracle',
@@ -57,13 +51,14 @@ class GasFeeEstimator:
         self._initialize_web3()
     
     def _initialize_web3(self):
-        """Initialize Web3 connections"""
-        for chain, rpc_url in self.rpc_endpoints.items():
+        """Initialize Web3 connections using Alchemy"""
+        for chain in ['ethereum', 'bsc', 'solana']:
+            rpc_url = get_rpc_url(chain)
             try:
                 w3 = Web3(Web3.HTTPProvider(rpc_url))
                 if w3.is_connected():
                     self.web3_connections[chain] = w3
-                    print(f"✓ Gas estimator connected to {chain.upper()}")
+                    print(f"✓ Gas estimator connected to {chain.upper()} via Alchemy")
             except Exception as e:
                 print(f"✗ Gas estimator failed to connect to {chain}: {e}")
     
@@ -129,7 +124,7 @@ class GasFeeEstimator:
         
         try:
             gas_price_wei = w3.eth.gas_price
-            gas_price_gwei = w3.from_wei(gas_price_wei, 'gwei')
+            gas_price_gwei = float(w3.from_wei(gas_price_wei, 'gwei'))
             
             # Estimate fast/standard/slow based on current price
             return {
@@ -145,10 +140,11 @@ class GasFeeEstimator:
         """Fetch Solana transaction fees (in lamports per signature)"""
         await self._ensure_session()
         
+        rpc_url = get_rpc_url('solana')
         try:
             # Call Solana RPC to get recent fees
             async with self.session.post(
-                self.rpc_endpoints['solana'],
+                rpc_url,
                 json={
                     "jsonrpc": "2.0",
                     "id": 1,

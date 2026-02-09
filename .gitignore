@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+*$py.class
+config.json
+test_output.log
+server_output.log
+verify_api.py
+verify_api_fast.py
