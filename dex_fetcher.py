@@ -9,7 +9,7 @@ from typing import Dict, Optional, List
 import json
 from decimal import Decimal
 
-from config import DEX_CONFIGS, ETH_TOKEN_ADDRESSES, BSC_TOKEN_ADDRESSES, DEX_PAIRS
+from config import DEX_CONFIGS, ETH_TOKEN_ADDRESSES, BSC_TOKEN_ADDRESSES, DEX_PAIRS, get_rpc_url
 from solana_dex_fetcher import SolanaDexFetcher
 
 # Uniswap V2 Pair ABI (minimal for getReserves)
@@ -72,23 +72,23 @@ class DexPriceFetcher:
         self._initialize_web3()
     
     def _initialize_web3(self):
-        """Initialize Web3 connections for ETH and BSC"""
-        # Group configs by chain
-        chains = {}
-        for dex_name, config in DEX_CONFIGS.items():
-            chain = config['chain']
-            if chain not in chains:
-                chains[chain] = config['rpc_url']
+        """Initialize Web3 connections for ETH and BSC using Alchemy"""
+        # Unique chains from config
+        chains = list(set(config['chain'] for config in DEX_CONFIGS.values()))
         
         # Create Web3 instances
-        for chain, rpc_url in chains.items():
+        for chain in chains:
+            if chain == 'solana':
+                continue # Solana handled by SolanaDexFetcher
+
+            rpc_url = get_rpc_url(chain)
             try:
                 w3 = Web3(Web3.HTTPProvider(rpc_url))
                 if w3.is_connected():
                     self.web3_connections[chain] = w3
-                    print(f"✓ Connected to {chain.upper()} RPC")
+                    print(f"✓ Connected to {chain.upper()} RPC via Alchemy")
                 else:
-                    print(f"✗ Failed to connect to {chain.upper()} RPC")
+                    print(f"✗ Failed to connect to {chain.upper()} RPC via Alchemy")
             except Exception as e:
                 print(f"✗ Error connecting to {chain}: {e}")
     
