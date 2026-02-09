@@ -78,8 +78,10 @@ async def arbitrage_monitor():
             if cross_exchange_opps or triangular_opps:
                 await manager.broadcast({
                     "timestamp": datetime.utcnow().isoformat(),
-                    "cross_exchange_arbitrage": cross_exchange_opps[:10],  # Top 10
-                    "intra_exchange_triangular": triangular_opps[:10]  # Top 10
+                    "simple_arbitrage": cross_exchange_opps[:10],  # For example_client.py
+                    "cross_exchange_arbitrage": cross_exchange_opps[:10],  # Legacy key
+                    "triangular_arbitrage": triangular_opps[:10],  # For example_client.py
+                    "intra_exchange_triangular": triangular_opps[:10]  # Legacy key
                 })
             
             await asyncio.sleep(2)  # Check every 2 seconds
@@ -117,8 +119,9 @@ async def get_prices(symbol: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/arbitrage/simple")
 @app.get("/arbitrage/cross-exchange")
-async def get_cross_exchange_arbitrage(
+async def get_simple_arbitrage(
     min_profit_percent: Optional[float] = 0.5,
     symbols: Optional[str] = None
 ):

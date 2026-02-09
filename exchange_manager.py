@@ -154,7 +154,9 @@ class ExchangeManager:
     def get_available_symbols(self, exchange: str) -> List[str]:
         """Get list of available trading symbols for an exchange"""
         if exchange in self.cex_exchanges:
-            return list(self.cex_exchanges[exchange].markets.keys())
+            exchange_obj = self.cex_exchanges[exchange]
+            if hasattr(exchange_obj, 'markets') and exchange_obj.markets:
+                return list(exchange_obj.markets.keys())
         return []
     
     def get_common_symbols(self) -> List[str]:

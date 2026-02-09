@@ -10,7 +10,7 @@ import json
 from decimal import Decimal
 
 from config import DEX_CONFIGS, ETH_TOKEN_ADDRESSES, BSC_TOKEN_ADDRESSES, DEX_PAIRS
-from solana_fetcher import SolanaDexFetcher
+from solana_dex_fetcher import SolanaDexFetcher
 
 # Uniswap V2 Pair ABI (minimal for getReserves)
 PAIR_ABI = [
@@ -131,7 +131,7 @@ class DexPriceFetcher:
             if pairs is None:
                 pairs = DEX_PAIRS.get('solana', [])
             
-            return await self.solana_fetcher.fetch_prices_for_pairs(pairs)
+            return await self.solana_fetcher.fetch_all_jupiter_prices(pairs)
         
         # For other Solana DEXs, Jupiter aggregates them anyway
         # So we can use Jupiter as the source

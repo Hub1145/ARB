@@ -129,7 +129,7 @@ class GasFeeEstimator:
         
         try:
             gas_price_wei = w3.eth.gas_price
-            gas_price_gwei = w3.from_wei(gas_price_wei, 'gwei')
+            gas_price_gwei = float(w3.from_wei(gas_price_wei, 'gwei'))
             
             # Estimate fast/standard/slow based on current price
             return {
